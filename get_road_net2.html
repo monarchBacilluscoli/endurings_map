@@ -1,0 +1,209 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- 声明当前页面采用chrome内核来渲染 -->
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>get_road_net</title>
+    <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css" />
+
+    <!-- 代码太多，不知道其作用是什么，先注释掉 -->
+    <!-- <script src="http://cache.amap.com/lbs/static/es5.min.js"></script> -->
+    <!-- 不知道这个外部脚本的作用，先注释掉 -->
+    <!-- <script src="https://webapi.amap.com/maps?v=1.4.9&key=fd4e4c965b3424d3bef165caea23afb5"></script> -->
+
+
+
+
+    <!-- 以下的脚本是引入了一个缩放工具条插件 -->
+    <!-- <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script> 
+ -->
+    <!-- 样式    -->
+    <style type="text/css">
+        /*id选择器为标有特定的id的HTML元素指定特定的样式*/
+        #enter {
+            color: #333;
+            padding: 6px;
+            border: 1px solid silver;
+            box-shadow: 3px 4px 3px 0px silver;
+            position: absolute;
+            background-color: #eee;
+            top: 50px;
+            margin-left: 40%;
+            border-radius: 5px;
+            overflow: hidden;
+            line-height: 20px;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0px;
+        }
+
+        /*class选择器，用于描述一组元素的样式，class选择器可以在多个元素中使用*/
+        .map {
+            height: 100%;
+            width: 100%;
+            float: left;
+        }
+
+        #export {
+            margin-left: 30%;
+            position: absolute;
+
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 获取经纬度框 -->
+    <div id="container" class="map"></div>
+    <div id="myPageTop">
+        <table>
+            <tr>
+                <td class="column2">
+                    <label>左击获取经纬度：</label>
+                </td>
+            </tr>
+            <tr>
+                <td class="column2">
+                    <input type="text" readonly="true" id="lnglat">
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 文件框 -->
+    <!-- <div id = "result" style="line-height: 24px"> </div> -->
+    <div id="enter">
+        <!-- onchang事件会在域的内容改变时发生 -->
+        <input type="file" size="50" onchange="processFiles(this.files)" /><br />
+    </div>
+
+    <!-- 文件导出框 -->
+    <div id="export">
+        <!--Click 事件是在一个对象上按下然后释放一个鼠标按钮时发生。它也会发生在一个控件的值改变时 -->
+        <input type="button" size="50" id="export" value="导出" onclick="writer()" />
+    </div>
+
+    <!-- 引入高德地图开发者的api,AMap.Autocomplete为提示输入控件 -->
+    <script
+        src="https://webapi.amap.com/maps?v=1.4.10&key=367262d907b298f99587951b99b8fc7f&plugin=AMap.Autocomplete"></script>
+    <!-- <script src="https://webapi.amap.com/maps?v=1.4.10&key=367262d907b298f99587951b99b8fc7f"></script> -->
+    <!-- FileSaver.js是一款基于HTML5完成文件保存插件，它可以帮你直接从网页中导出多种格式文件 -->
+    <script src="./FileSaver/src/FileSaver.js"></script>
+    <script>
+        var nodes = new Array();
+        var map = new AMap.Map('container', {
+            resizeEnable: true,//是否监控地图容器尺寸变
+            center: [114.400024, 30.507183],
+            zoom: 13//初始化地图层级,（比例尺不同）
+        });
+        // 为地图注册click事件获取鼠标点击出的经纬度坐标
+        map.on('click', function (e) {
+            document.getElementById("lnglat").value = e.lnglat.getLng() + ',' + e.lnglat.getLat()
+            nodes = e.lnglat.getLng() + ',' + e.lnglat.getLat();
+        });
+        // 模态框高德地图自动输入
+        var auto = new AMap.Autocomplete({
+            input: "tipinput"//使用联想输入的input的id
+        });
+        //auto是注册事件对象，第二个参数是事件名，第三个参数是事件回调函数
+        AMap.event.addListener(auto, "select", select);//注册监听，当选中某条记录时会触发
+        function select(e) {
+            // poi的意思是point of informations，表示信息点的意思
+            if (e.poi && e.poi.location) {
+                map.setZoom(15);
+                map.setCenter(e.poi.location);
+            }
+        }
+        // 写文件
+        // function writer(){
+        //          //alert("点击成功")；
+        //     var content = "这是直接使用HTML5进行导出的";
+        //    blob = new Blob([content], {type: "text/plain;charset=utf-8"});
+        //   saveAs(blob, "file.txt");//saveAs(blob,filename)
+        //   for (var i = 0; i < nodes.length; i++) {
+        //          blob = new Blob(nodes[i], {type: "text/plain;charset=utf-8"});
+        //      }
+        //     blob = new Blob([content], {type: "text/plain;charset=utf-8"});
+        //     saveAs(blob, "test.txt");
+        //     }
+
+
+        function processFiles(files) {
+            // var p1 = [114.4084790,30.4655630];
+            // var p2 = [114.4092780,30.5258350];
+            // // 返回 p1 到 p2 间的地面距离，单位：米
+            // var dis = AMap.GeometryUtil.distance(p1, p2);
+            // alert(dis);
+            var file = files[0];
+            var reader;
+            reader = new FileReader();
+            //判断浏览器是否支持FileReader
+            // if (typeof FileReader !== 'undefined') {
+            //     reader = new FileReader();
+            //     //reader.readAsText(file);
+            //     //开始读取指定的文件中的类容，一旦完成，result属性中将包含一个字符串以表示所读取的文件的内容。
+            //     //onload事件是文件读取成功完成时触发,Event对象代表事件的状态，比如事件在其中发生的元素、键盘按键的状态、鼠标的位置、鼠标按钮的状态。
+            //     //事件通常与函数结合使用，函数不会在事件发生前被执行,target 事件属性可返回事件的目标节点（触发该事件的节点），如生成事件的元素、文档或窗口。
+            //     reader.onload = function (e) {  // 这个事件发生，意为着数据准备好了,把每行划分成一个字符串。
+            //         if (e.target.result.length !== "undefined" && e.target.result !== null) {
+            //             var lines = e.target.result;
+            //             for (var line = 0; line < lines.length; line++) {
+            //                 var lines2 = 0;
+            //                 var lineArr = new Array();
+            //                 lines2 = lines[line].split(';');
+            //                 for (var i = 0; i < lines2.length; i++) {
+            //                     var lines3 = 0;
+            //                     lines3 = lines2[i].split(',');
+            //                     lineArr[i] = new Array();
+            //                     for (var j = 0; j < lines3.length; j++)
+            //                         lineArr[i][j] = parseFloat(lines3[j]);
+            //                 }
+            //                 var polyline = new AMap.Polyline({
+            //                     path: lineArr,          //设置线覆盖物路径
+            //                     strokeColor: "#000000", //线颜色 #3366FF
+            //                     strokeOpacity: 1,       //线透明度
+            //                     strokeWeight: 1,        //线宽
+            //                     strokeStyle: "solid",   //线样式
+            //                     strokeDasharray: [10, 5], //补充线样式
+            //                 });
+            //                 polyline.setMap(map);
+            //             }
+            //             reader.readAsText(file);
+            //         }
+            //         else {
+            //             alert('没有成功读取文件');
+            //         }
+            //     }
+            // reader.onloadstart = function (e) {
+            //     alert('读取文件开始时触发');
+            // }
+            // reader.error = function (e) {
+            //     alert('读取数据出错');
+            // }
+            reader.onloadend = function (e) {
+                alert(e.target.result); //! 看看这个显不显示了？
+                // 把那些if()的玩意放这里
+            }
+            reader.readAsText(file);
+            // reader.onabort = function (e) {
+            //     alert('读取文件中断时触发');
+            // }
+            // reader.onprocess = function (e) {
+            //     alert('文件在读取中触发');
+            // }
+            // }
+            // else {
+            //     alert('浏览器不支持FileReader');
+            // }
+        } 
+    </script>
+</body>
+
+</html>
