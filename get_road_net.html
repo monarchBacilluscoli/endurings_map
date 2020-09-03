@@ -141,7 +141,7 @@
             // // 返回 p1 到 p2 间的地面距离，单位：米
             // var dis = AMap.GeometryUtil.distance(p1, p2);
             // alert(dis);
-            debugger;
+            // debugger;
             var file = files[0];
             var reader;
             //判断浏览器是否支持FileReader
@@ -160,57 +160,36 @@
                     //onload事件是文件读取成功完成时触发,Event对象代表事件的状态，比如事件在其中发生的元素、键盘按键的状态、鼠标的位置、鼠标按钮的状态。
                     //事件通常与函数结合使用，函数不会在事件发生前被执行,target 事件属性可返回事件的目标节点（触发该事件的节点），如生成事件的元素、文档或窗口。
                     var lines = e.target.result;
-                    //var lines=e.target.result;
-                    //console.log(lines.length);
-                    for (var line = 0; line < lines.length; line++) {
-                        var lines2 = 0;
-                        var lineArr = new Array();
-                        //对每一行进行分割
-                        lines2 = lines[line].split(';');
-                        for (var i = 0; i < lines2.length; i++) {
-                            var lines3 = 0;
-                            lines3 = lines2[i].split(',');
-                            lineArr[i] = new Array();
-                            for (var j = 0; j < lines3.length; j++)
-                                lineArr[i][j] = parseFloat(lines3[j]);
-                        }
-                        var polyline = new AMap.Polyline({
-                            path: lineArr,          //设置线覆盖物路径
-                            strokeColor: "#000000", //线颜色 #3366FF
-                            strokeOpacity: 1,       //线透明度
-                            strokeWeight: 1,        //线宽
-                            strokeStyle: "solid",   //线样式
-                            strokeDasharray: [10, 5], //补充线样式
-                        });
-                        polyline.setMap(map);
+                    var lines2 = 0;
+                    var lineArr = new Array();
+                    //对每一行进行分割
+                    lines2 = lines.split(';\r\n');
+                    console.log(typeof (lines1));
+                    for (var i = 0; i < lines2.length; i++) {
+                        var lines3 = 0;
+                        lines3 = lines2[i].split(' ,');
+                        lineArr[i] = new Array();
+                        for (var j = 0; j < lines3.length; j++)
+                            lineArr[i][j] = parseFloat(lines3[j]);
                     }
+                    var polyline = new AMap.Polyline({
+                        path: lineArr,          //设置线覆盖物路径
+                        strokeColor: "#000000", //线颜色 #3366FF
+                        strokeOpacity: 1,       //线透明度
+                        strokeWeight: 1,        //线宽
+                        strokeStyle: "solid",   //线样式
+                        strokeDasharray: [10, 5], //补充线样式
+                    });
+                    polyline.setMap(map);
                 }
                 else {
                     alert('没有成功读取文件');
                 }
             }
-            // reader.onloadstart = function (e) {
-            //     alert('读取文件开始时触发');
-            //     // console.log(file)
-            // }
             reader.error = function (e) {
                 alert('读取数据出错');
             }
-            reader.onloadend = function (e) {
-                alert('读取文件结束时(无论是否成功)触发');
-                console.log(e.target.result);
-                console.log(e.target.length);
-            }
-            reader.onabort = function (e) {
-                alert('读取文件中断时触发');
-            }
-            reader.onprocess = function (e) {
-                alert('文件在读取中触发');
-            }
             reader.readAsText(files[0], 'UTF-8');
-            // console.log(reader.length);
-            // console.log(reader.result);
-
         }
     </script>
 </body>

@@ -189,7 +189,33 @@
             // }
             reader.onloadend = function (e) {
                 alert(e.target.result); //! 看看这个显不显示了？
-                // 把那些if()的玩意放这里
+                if (e.target.result !== null) {
+                    var lines = e.target.result;
+                    for (var line = 0; line < lines.length; line++) {
+                        var lines2 = 0;
+                        var lineArr = new Array();
+                        lines2 = lines[line].split(';');
+                        for (var i = 0; i < lines2.length; i++) {
+                            var lines3 = 0;
+                            lines3 = lines2[i].split(',');
+                            lineArr[i] = new Array();
+                            for (var j = 0; j < lines3.length; j++)
+                                lineArr[i][j] = parseFloat(lines3[j]);
+                        }
+                        var polyline = new AMap.Polyline({
+                            path: lineArr,          //设置线覆盖物路径
+                            strokeColor: "#000000", //线颜色 #3366FF
+                            strokeOpacity: 1,       //线透明度
+                            strokeWeight: 1,        //线宽
+                            strokeStyle: "solid",   //线样式
+                            strokeDasharray: [10, 5], //补充线样式
+                        });
+                        polyline.setMap(map);
+                    }
+                }
+                else {
+                    alert('没有成功读取文件');
+                }
             }
             reader.readAsText(file);
             // reader.onabort = function (e) {
